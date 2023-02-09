@@ -64,6 +64,7 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 name = "ddos"
 version = "0.1.0"
 dependencies = [
+ "icmp",
  "reqwest",
  "tokio",
 ]
@@ -258,6 +259,15 @@ dependencies = [
  "native-tls",
  "tokio",
  "tokio-native-tls",
+]
+
+[[package]]
+name = "icmp"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac73e9bd805ebd8bfd8bb46886a3126ebdb1f46b5e8f5c73170c968912bb2e16"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
