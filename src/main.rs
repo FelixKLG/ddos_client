@@ -8,7 +8,7 @@ use reqwest::{
 #[tokio::main]
 async fn main() {
     let thread_spawn = 2000;
-    let target = "https://sneakyspeedyboii.com/";
+    let target = "ur mum";
 
     let mut headers = HeaderMap::new();
     headers.insert(
