@@ -9,6 +9,7 @@ edition = "2021"
 reqwest = "0.11.14"
 tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
 
+
 [profile.release]
 panic = "abort"
 strip = true

